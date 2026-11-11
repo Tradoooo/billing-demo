@@ -1,0 +1,30 @@
+{
+  "en": {
+    "app.name": "Acme Billing",
+    "app.tagline": "Invoicing demo fixture",
+    "auth.loginFailed": "Unknown email or password",
+    "auth.welcome": "Signed in as",
+    "invoice.subtotal": "Subtotal",
+    "invoice.tax": "VAT",
+    "invoice.total": "Total",
+    "invoice.issued": "Issued",
+    "invoice.currency": "Currency",
+    "routes.title": "Available routes",
+    "errors.invoiceNotFound": "Invoice not found",
+    "errors.emptyCart": "An invoice needs at least one line"
+  },
+  "fr": {
+    "app.name": "Acme Facturation",
+    "app.tagline": "Dépôt de démonstration",
+    "auth.loginFailed": "Adresse ou mot de passe inconnu",
+    "auth.welcome": "Connecté en tant que",
+    "invoice.subtotal": "Sous-total",
+    "invoice.tax": "TVA",
+    "invoice.total": "Total",
+    "invoice.issued": "Émise le",
+    "invoice.currency": "Devise",
+    "routes.title": "Routes disponibles",
+    "errors.invoiceNotFound": "Facture introuvable",
+    "errors.emptyCart": "Une facture nécessite au moins une ligne"
+  }
+}

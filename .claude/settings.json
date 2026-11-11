@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.chantier/hook.sh open"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "http",
+            "url": "<INSTALLATION_URL>/ingest/touch",
+            "timeout": 3,
+            "headers": {
+              "Authorization": "Bearer $CHANTIER_TOKEN",
+              "X-Chantier-Repo": "acme/billing"
+            },
+            "allowedEnvVars": ["CHANTIER_TOKEN"]
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.chantier/hook.sh close"
+          }
+        ]
+      }
+    ]
+  }
+}

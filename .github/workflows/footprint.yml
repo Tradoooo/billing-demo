@@ -1,0 +1,93 @@
+# ---------------------------------------------------------------------------
+# GitHub Actions — attested footprint for "Chantiers en collision".
+#
+# WHAT THIS DOES (one job, one POST, no build step)
+#   On every push it lists the files this branch changed since it diverged from
+#   `main` and sends them to the app as an ATTESTED footprint: the CI runner is
+#   the witness, so the worksite exists even for a developer with no agent and
+#   no hook installed.
+#
+# SETUP (Jira > project settings > Worksites > "Hook & CI")
+#   Repository secret CHANTIER_URL           e.g. https://<INSTALLATION>.webtrigger.atlassian.app/v2/<APP_ID>
+#   Repository secret CHANTIER_PROJECT_TOKEN project token, restricted to /ci/* routes
+#
+# FAIL-OPEN: missing secret, no merge base, dead app, slow app — the job prints
+# a notice and exits 0. This workflow never fails your build.
+# ---------------------------------------------------------------------------
+name: chantier-footprint
+
+on:
+  push:
+  workflow_dispatch:
+
+# One run per branch; a new push cancels the footprint run still in flight.
+concurrency:
+  group: chantier-footprint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  footprint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # Both secrets are optional: absent means "skip", not "fail".
+      CHANTIER_URL: ${{ secrets.CHANTIER_URL }}
+      CHANTIER_PROJECT_TOKEN: ${{ secrets.CHANTIER_PROJECT_TOKEN }}
+      SLUG: ${{ github.repository }}          # owner/repo, e.g. acme/billing
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      BASE: main
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 1 keeps the checkout light; the base branch is fetched
+          # separately below (one extra commit, not the whole history).
+          fetch-depth: 1
+
+      - name: Send the attested footprint
+        run: |
+          # --- skip cleanly when the app is not configured on this fork ------
+          if [ -z "${CHANTIER_PROJECT_TOKEN}" ]; then
+            echo "::notice::CHANTIER_PROJECT_TOKEN is not set - skipping the footprint attestation."
+            exit 0
+          fi
+          if [ -z "${CHANTIER_URL}" ] || printf '%s' "$CHANTIER_URL" | grep -q '<INSTALLATION_URL>'; then
+            echo "::notice::CHANTIER_URL is not set - skipping the footprint attestation."
+            exit 0
+          fi
+
+          # --- accept both URL conventions: app base or ingest base ----------
+          BASE_URL="${CHANTIER_URL%/}"
+          case "$BASE_URL" in
+            */ingest) ;;
+            *) BASE_URL="${BASE_URL}/ingest" ;;
+          esac
+
+          # --- files changed since the base branch --------------------------
+          git fetch --no-tags --depth=1 origin "$BASE" || true
+          CHANGED="$(git diff --name-only "origin/$BASE...HEAD" 2>/dev/null)"
+          if [ -z "$CHANGED" ]; then
+            # Shallow history without a merge base: fall back to a two-dot diff.
+            CHANGED="$(git diff --name-only "origin/$BASE" HEAD 2>/dev/null)"
+          fi
+          if [ -z "$CHANGED" ]; then
+            echo "::notice::Nothing to compare against $BASE - skipping."
+            exit 0
+          fi
+
+          # --- ticket key from the branch name (feature/PROJ-101 -> PROJ-101) -
+          ISSUE_KEY="$(printf '%s' "$BRANCH" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1 || true)"
+
+          # --- JSON array of paths, encoded safely --------------------------
+          FILES_JSON="$(printf '%s\n' "$CHANGED" \
+            | python3 -c 'import sys, json; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')"
+
+          # --- POST; never fail the build (|| true) --------------------------
+          curl -sS --max-time 30 -X POST "${BASE_URL}/ci/footprint" \
+            -H "Authorization: Bearer ${CHANTIER_PROJECT_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "X-Chantier-Repo: ${SLUG}" \
+            -d "{\"repoSlug\":\"${SLUG}\",\"branch\":\"${BRANCH}\",\"baseBranch\":\"${BASE}\",\"issueKey\":\"${ISSUE_KEY}\",\"files\":${FILES_JSON}}" \
+            || true
+          echo "Footprint sent for ${BRANCH} (${SLUG})."
