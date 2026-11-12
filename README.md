@@ -31,12 +31,12 @@ Everything is fictional: no real customer, no real money, no real credentials.
 
 | Value | Where |
 |---|---|
-| `<INSTALLATION_URL>` = `https://<INSTALLATION>.webtrigger.atlassian.app/v2/<APP_ID>` | Jira → project settings → **Worksites** → *Hook & CI* tab (copy button). |
+| `https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ` = `https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ` | Jira → project settings → **Worksites** → *Hook & CI* tab (copy button). |
 | `CHANTIER_TOKEN` (personal token) | Jira → personal settings → **My worksites** → *Generate token*. Shown **once**; the app keeps only its sha256. |
 | `CHANTIER_PROJECT_TOKEN` (project token, `/ci/*` only) | Jira → project settings → **Worksites** → *Hook & CI* tab. |
 
 ```bash
-export CHANTIER_URL="https://<INSTALLATION>.webtrigger.atlassian.app/v2/<APP_ID>"
+export CHANTIER_URL="https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ"
 export CHANTIER_TOKEN="<your personal token>"
 ```
 
@@ -48,7 +48,7 @@ The repository already ships `.chantier/hook.sh` (executable) and `.claude/setti
 
 1. Copy the two files into your own project if you are not working in this one:
    `.chantier/hook.sh` + `.claude/settings.json` (merge the `hooks` block into your existing settings).
-2. In `.claude/settings.json`, replace `<INSTALLATION_URL>` in the `PreToolUse` URL with your own
+2. In `.claude/settings.json`, replace `https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ` in the `PreToolUse` URL with your own
    base URL (the `X-Chantier-Repo: acme/billing` header stays as long as you test against this repo).
 3. Export `CHANTIER_URL` and `CHANTIER_TOKEN` (above). The token never gets committed.
 4. Start **two agent sessions on two tickets**, e.g. two terminals or two worktrees:
@@ -74,14 +74,14 @@ never blocked: the script exits 0 within 3 s (1.5 s on `SessionEnd`) whatever ha
 ## (b) Use it with CI
 
 `.github/workflows/footprint.yml` runs on every push: it computes the files changed since `main`
-and POSTs them to `<INSTALLATION_URL>/ingest/ci/footprint`. This makes an **attested** footprint
+and POSTs them to `https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ/ci/footprint`. This makes an **attested** footprint
 appear for a developer who has no agent and no hook at all.
 
 Add two repository secrets (Settings → Secrets and variables → Actions):
 
 | Secret | Value |
 |---|---|
-| `CHANTIER_URL` | `https://<INSTALLATION>.webtrigger.atlassian.app/v2/<APP_ID>` |
+| `CHANTIER_URL` | `https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ` |
 | `CHANTIER_PROJECT_TOKEN` | the project token (`/ci/*` routes only) |
 
 No secret, no merge base, app down: the job prints a notice and exits 0. It never fails your build
@@ -95,7 +95,7 @@ Two commands that simulate two pushes on two tickets. Either token works on `/ci
 **Push 1 — PROJ-88 touches the billing domain:**
 
 ```bash
-curl -sS -X POST "<INSTALLATION_URL>/ingest/ci/footprint" \
+curl -sS -X POST "https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ/ci/footprint" \
   -H "Authorization: Bearer $CHANTIER_PROJECT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -110,7 +110,7 @@ curl -sS -X POST "<INSTALLATION_URL>/ingest/ci/footprint" \
 **Push 2 — PROJ-101 touches the same file (and a migration):**
 
 ```bash
-curl -sS -X POST "<INSTALLATION_URL>/ingest/ci/footprint" \
+curl -sS -X POST "https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ/ci/footprint" \
   -H "Authorization: Bearer $CHANTIER_PROJECT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

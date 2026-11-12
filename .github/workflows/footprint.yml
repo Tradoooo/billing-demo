@@ -8,7 +8,7 @@
 #   no hook installed.
 #
 # SETUP (Jira > project settings > Worksites > "Hook & CI")
-#   Repository secret CHANTIER_URL           e.g. https://<INSTALLATION>.webtrigger.atlassian.app/v2/<APP_ID>
+#   Repository secret CHANTIER_URL           e.g. https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ
 #   Repository secret CHANTIER_PROJECT_TOKEN project token, restricted to /ci/* routes
 #
 # FAIL-OPEN: missing secret, no merge base, dead app, slow app — the job prints
@@ -52,7 +52,7 @@ jobs:
             echo "::notice::CHANTIER_PROJECT_TOKEN is not set - skipping the footprint attestation."
             exit 0
           fi
-          if [ -z "${CHANTIER_URL}" ] || printf '%s' "$CHANTIER_URL" | grep -q '<INSTALLATION_URL>'; then
+          if [ -z "${CHANTIER_URL}" ] || printf '%s' "$CHANTIER_URL" | grep -q 'https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ'; then
             echo "::notice::CHANTIER_URL is not set - skipping the footprint attestation."
             exit 0
           fi

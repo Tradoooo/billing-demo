@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "http",
-            "url": "<INSTALLATION_URL>/ingest/touch",
+            "url": "https://ecf6c663-f8a9-4232-b725-07cf87121ef4.webtrigger.atlassian.app/public/CMqSJpepH37pD_ux7w8m_3P7BEQ/touch",
             "timeout": 3,
             "headers": {
               "Authorization": "Bearer $CHANTIER_TOKEN",
